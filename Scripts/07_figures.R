@@ -4,6 +4,7 @@ library(tidyverse)
 library(patchwork)
 library(scales)
 library(showtext)
+library(ggtext)
 library(here)
 showtext_auto()
 font_add_google("Noto Sans", "notosans")
@@ -213,7 +214,8 @@ make_genus_panel <- function(genus_display, genus_pattern, species_list, tag) {
   stats <- stats %>%
     mutate(
       p_label = ifelse(p < 0.001, "p<0.001", sprintf("p=%.3f", p)),
-      legend_label = paste0(taxon, "\n\u03C1=", sprintf("%+.2f", rho), ", ", p_label)
+      taxon_fmt = ifelse(str_detect(taxon, "all spp"), taxon, paste0("*", taxon, "*")),
+      legend_label = paste0(taxon_fmt, "<br>\u03C1=", sprintf("%+.2f", rho), ", ", p_label)
     )
 
   plot_df <- plot_df %>%
@@ -244,11 +246,12 @@ make_genus_panel <- function(genus_display, genus_pattern, species_list, tag) {
           legend.justification = c(1, 0),
           legend.background = element_rect(fill = alpha("white", 0.92), colour = NA),
           legend.key.size = unit(0.3, "cm"),
-          legend.text = element_text(size = 6.5),
+          legend.text = element_markdown(size = 6.5, lineheight = 1.2),
           legend.spacing.y = unit(0.1, "cm"),
           plot.title = element_text(face = "bold.italic", size = 8))
 }
 
+# --- WHO BPPL 2024 Critical ---
 p_a <- make_genus_panel("Acinetobacter", "^Acinetobacter",
   c("A. baumannii" = "Acinetobacter baumannii",
     "A. johnsonii" = "Acinetobacter johnsonii",
@@ -260,30 +263,67 @@ p_b <- make_genus_panel("Klebsiella", "^Klebsiella",
 p_c <- make_genus_panel("Escherichia", "^Escherichia",
   c("E. coli" = "Escherichia coli"), "C")
 
-p_d <- make_genus_panel("Enterococcus", "^Enterococcus",
+p_d <- make_genus_panel("Enterobacter", "^Enterobacter",
+  c("E. cloacae" = "Enterobacter cloacae"), "D")
+
+p_e <- make_genus_panel("Mycobacterium", "^Mycobacterium",
+  c("M. tuberculosis" = "Mycobacterium tuberculosis"), "E")
+
+# --- WHO BPPL 2024 High ---
+p_f <- make_genus_panel("Enterococcus", "^Enterococcus",
   c("E. faecium" = "Enterococcus faecium",
-    "E. faecalis" = "Enterococcus faecalis"), "D")
+    "E. faecalis" = "Enterococcus faecalis"), "F")
 
-p_e <- make_genus_panel("Pseudomonas", "^Pseudomonas",
-  c("P. aeruginosa" = "Pseudomonas aeruginosa"), "E")
+p_g <- make_genus_panel("Staphylococcus", "^Staphylococcus",
+  c("S. aureus" = "Staphylococcus aureus"), "G")
 
-p_f <- make_genus_panel("Staphylococcus", "^Staphylococcus",
-  c("S. aureus" = "Staphylococcus aureus"), "F")
+p_h <- make_genus_panel("Pseudomonas", "^Pseudomonas",
+  c("P. aeruginosa" = "Pseudomonas aeruginosa"), "H")
 
-p_g <- make_genus_panel("Salmonella", "^Salmonella",
-  c("S. enterica" = "Salmonella enterica"), "G")
+p_i <- make_genus_panel("Salmonella", "^Salmonella",
+  c("S. enterica" = "Salmonella enterica"), "I")
 
-p_h <- make_genus_panel("Clostridioides", "^Clostridioides",
-  c("C. difficile" = "Clostridioides difficile"), "H")
+p_j <- make_genus_panel("Neisseria", "^Neisseria",
+  c("N. gonorrhoeae" = "Neisseria gonorrhoeae"), "J")
+
+# --- WHO BPPL 2024 Medium ---
+p_k <- make_genus_panel("Streptococcus", "^Streptococcus",
+  c("S. pneumoniae" = "Streptococcus pneumoniae",
+    "S. pyogenes" = "Streptococcus pyogenes"), "K")
+
+p_l <- make_genus_panel("Haemophilus", "^Haemophilus",
+  c("H. influenzae" = "Haemophilus influenzae"), "L")
 
 strip_y <- theme(axis.title.y = element_blank())
 strip_x <- theme(axis.title.x = element_blank())
+bigger_text <- theme(
+  axis.text = element_text(size = 7.5),
+  axis.title = element_text(size = 8.5),
+  plot.title = element_text(face = "bold.italic", size = 9.5),
+  legend.text = element_markdown(size = 7, lineheight = 1.2),
+  plot.tag = element_text(face = "bold", size = 11)
+)
 
-fig2 <- ((p_a + strip_x) | (p_b + strip_x + strip_y) | (p_c + strip_x + strip_y) | (p_d + strip_x + strip_y)) /
-        (p_e | (p_f + strip_y) | (p_g + strip_y) | (p_h + strip_y))
+# 4 columns x 3 rows (Critical / High / Medium)
+fig2 <- (
+  (p_a + strip_x + bigger_text) |
+  (p_b + strip_x + strip_y + bigger_text) |
+  (p_c + strip_x + strip_y + bigger_text) |
+  (p_d + strip_x + strip_y + bigger_text)
+) / (
+  (p_e + strip_x + bigger_text) |
+  (p_f + strip_x + strip_y + bigger_text) |
+  (p_g + strip_x + strip_y + bigger_text) |
+  (p_h + strip_x + strip_y + bigger_text)
+) / (
+  (p_i + bigger_text) |
+  (p_j + strip_y + bigger_text) |
+  (p_k + strip_y + bigger_text) |
+  (p_l + strip_y + bigger_text)
+)
 
 ggsave(here("Figures", "Fig2_species_pathogens.pdf"), fig2,
-       width = 12, height = 7)
+       width = 14, height = 10.5)
 
 adj_arg <- read_csv(here("Results", "adjusted_arg_temp.csv"),
                     show_col_types = FALSE)

@@ -143,9 +143,16 @@ mediation_summary <- tibble(
   pct_mediated = c(med_fg$prop_mediated, med_acq$prop_mediated) * 100
 )
 
-focus_genera <- c("Acinetobacter", "Escherichia", "Klebsiella", "Pseudomonas",
-                  "Enterococcus", "Staphylococcus", "Salmonella", "Campylobacter",
-                  "Vibrio", "Clostridioides")
+focus_genera <- c(
+  # WHO BPPL 2024 — Critical
+  "Acinetobacter", "Escherichia", "Klebsiella", "Enterobacter", "Mycobacterium",
+  # WHO BPPL 2024 — High
+  "Enterococcus", "Staphylococcus", "Pseudomonas", "Salmonella", "Neisseria",
+  # WHO BPPL 2024 — Medium
+  "Streptococcus", "Haemophilus",
+  # Additional (foodborne / 2017 WHO)
+  "Campylobacter", "Vibrio", "Clostridioides"
+)
 
 focus_results <- temp_cors %>%
   filter(genus %in% focus_genera | str_detect(genus, paste(focus_genera, collapse = "|")))

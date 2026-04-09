@@ -31,7 +31,13 @@ targets <- tribble(
   "S. aureus",             "Staphylococcus aureus",       "High",       "Staphylococcus",
   "Salmonella enterica",   "Salmonella enterica",         "High",       "Salmonella",
   "N. gonorrhoeae",        "Neisseria gonorrhoeae",       "High",       "Neisseria",
-  "C. jejuni",             "Campylobacter jejuni",        "High",       "Campylobacter"
+  "C. jejuni",             "Campylobacter jejuni",        "High",       "Campylobacter",
+  # WHO BPPL 2024 additions
+  "M. tuberculosis",       "Mycobacterium tuberculosis",  "Critical",   "Mycobacterium",
+  "H. influenzae",         "Haemophilus influenzae",       "Medium",     "Haemophilus",
+  "E. cloacae",            "Enterobacter cloacae",         "Critical",   "Enterobacter",
+  "S. pneumoniae",         "Streptococcus pneumoniae",     "Medium",     "Streptococcus",
+  "S. pyogenes",           "Streptococcus pyogenes",       "Medium",     "Streptococcus"
 )
 
 all_cols <- names(motu)[-1]

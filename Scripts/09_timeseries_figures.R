@@ -103,8 +103,14 @@ ts_data$bac_PC1 <- gen_pcoa$points[, 1]
 ts_data$bac_PC2 <- gen_pcoa$points[, 2]
 ts_data$bac_PC3 <- gen_pcoa$points[, 3]
 
-part1_genera <- c("Acinetobacter", "Klebsiella", "Escherichia", "Enterococcus",
-                  "Pseudomonas", "Staphylococcus", "Salmonella", "Clostridioides")
+part1_genera <- c(
+  # WHO BPPL 2024 Critical
+  "Acinetobacter", "Klebsiella", "Escherichia", "Enterobacter", "Mycobacterium",
+  # WHO BPPL 2024 High
+  "Enterococcus", "Staphylococcus", "Pseudomonas", "Salmonella", "Neisseria",
+  # WHO BPPL 2024 Medium
+  "Streptococcus", "Haemophilus"
+)
 
 adj_cross <- read.csv(here("Results", "adjusted_species_temp.csv")) %>%
   filter(grepl("all spp\\.|E\\. coli", display)) %>%
@@ -192,8 +198,11 @@ fig3b <- ggplot(med_data, aes(x = "Resistome", y = R2, fill = path)) +
         legend.margin = margin(t = -2),
         plot.title = element_text(size = 9.5))
 
-fig2_genera <- c("Acinetobacter", "Klebsiella", "Escherichia", "Enterococcus",
-                 "Pseudomonas", "Staphylococcus", "Salmonella", "Clostridioides")
+fig2_genera <- c(
+  "Acinetobacter", "Klebsiella", "Escherichia", "Enterobacter", "Mycobacterium",
+  "Enterococcus", "Staphylococcus", "Pseudomonas", "Salmonella", "Neisseria",
+  "Streptococcus", "Haemophilus"
+)
 
 gen_stats <- tibble()
 gen_city_stats <- tibble()
@@ -287,7 +296,7 @@ fig3c <- ggplot(genera_long, aes(x = T_air_30d, y = clr)) +
              colour = "grey25", lineheight = 1.1,
              fill = alpha("white", 0.8), label.size = 0,
              label.padding = unit(0.2, "lines")) +
-  facet_wrap(~genus, scales = "free_y", ncol = 2) +
+  facet_wrap(~genus, scales = "free_y", ncol = 3) +
   scale_colour_manual(values = city_cols, name = "City") +
   scale_x_continuous(expand = expansion(mult = c(0.02, 0.08))) +
   labs(tag = "C",
@@ -298,12 +307,12 @@ fig3c <- ggplot(genera_long, aes(x = T_air_30d, y = clr)) +
         strip.text = element_text(face = "bold.italic", size = 9))
 
 left_col <- (fig3a / fig3b) + plot_layout(heights = c(1.2, 1))
-fig3 <- (left_col | fig3c) + plot_layout(widths = c(1, 1.8))
+fig3 <- (left_col | fig3c) + plot_layout(widths = c(1, 2.4))
 
 ggsave(here("Figures", "Fig3_temporal_replication.pdf"), fig3,
-       width = 12, height = 10)
+       width = 15, height = 12)
 ggsave(here("Figures", "Fig3_temporal_replication.png"), fig3,
-       width = 12, height = 10, dpi = 300)
+       width = 15, height = 12, dpi = 300)
 
 ts_dm <- ts_data %>%
   filter(!is.na(T_air_30d)) %>%
@@ -486,17 +495,17 @@ sfig14 <- ggplot(genera_long_day, aes(x = T_air_day, y = clr)) +
              colour = "grey25", lineheight = 1.1,
              fill = alpha("white", 0.8), label.size = 0,
              label.padding = unit(0.2, "lines")) +
-  facet_wrap(~genus, scales = "free_y", nrow = 2) +
+  facet_wrap(~genus, scales = "free_y", ncol = 4) +
   scale_colour_manual(values = city_cols, name = "City") +
   scale_x_continuous(expand = expansion(mult = c(0.02, 0.08))) +
   labs(title = "Same-day air temperature (sensitivity analysis)",
        x = "Collection-day air temperature (\u00B0C)",
        y = "Abundance (CLR-transformed)") +
   theme(legend.position = "bottom",
-        strip.text = element_text(face = "bold.italic", size = 7))
+        strip.text = element_text(face = "bold.italic", size = 8))
 
 ggsave(here("Figures", "SFig14_sameday_temp.pdf"), sfig14,
-       width = 11, height = 6)
+       width = 14, height = 10)
 
 mod_temp <- ts_data$T_air_30d[mod_idx]
 mod_city <- factor(ts_data$city[mod_idx])
@@ -575,14 +584,14 @@ sfig20 <- ggplot(genera_long, aes(x = T_air_30d, y = clr)) +
              colour = "grey25", lineheight = 1.1,
              fill = alpha("white", 0.8), label.size = 0,
              label.padding = unit(0.2, "lines")) +
-  facet_wrap(~genus, scales = "free_y", nrow = 2) +
+  facet_wrap(~genus, scales = "free_y", ncol = 4) +
   scale_colour_manual(values = city_cols, name = "City") +
   scale_x_continuous(expand = expansion(mult = c(0.02, 0.08))) +
   labs(title = "Month-adjusted sensitivity (city + month residualization)",
        x = "30-day mean air temperature (\u00B0C)",
        y = "Abundance (CLR-transformed)") +
   theme(legend.position = "bottom",
-        strip.text = element_text(face = "bold.italic", size = 7))
+        strip.text = element_text(face = "bold.italic", size = 8))
 
 ggsave(here("Figures", "SFig20_month_adjusted.pdf"), sfig20,
-       width = 11, height = 6)
+       width = 14, height = 10)

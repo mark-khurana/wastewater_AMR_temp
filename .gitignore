@@ -29,12 +29,6 @@ Figures/*.png
 
 # Excluded scripts (not in final paper/supplement)
 Scripts/06c_cruzloya_args.R
-Scripts/07b_supplementary_figures.R
-Scripts/07c_adjusted_correlations.R
-Scripts/09b_timeseries_species_figure.R
-Scripts/09c_city_species_figures.R
-Scripts/10_tables.R
-Scripts/10b_tables_docx.R
 Scripts/eTable8_grid_distances.R
 Scripts/scratch_humidity_check.R
 Scripts/README_pipeline.md
