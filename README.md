@@ -1,6 +1,6 @@
-# Temperature and antimicrobial resistance in global wastewater
+# Temperature-driven shifts in WHO priority pathogens and antimicrobial resistance
 
-Code for: *Association between temperature and antimicrobial resistance in global wastewater: a metagenomic analysis of 104 countries*
+Code for: *Temperature-driven shifts in WHO priority pathogens and antimicrobial resistance: a global sewage surveillance study*
 
 ## Data
 
@@ -39,10 +39,16 @@ Run in order. Scripts that call external APIs (01, 01b, 02) cache results locall
 | `04_layer1_naive_models.R` | PERMANOVA: temperature + WHO region + year (naive models) |
 | `05_layer2_covariates.R` | PERMANOVA with full covariate adjustment and variance partitioning |
 | `06_layer3_species_mediation.R` | Bacteriome mediation analysis and genus-level temperature correlations |
-| `06b_species_pathogens.R` | Species-level correlations for WHO priority pathogens |
+| `06b_species_pathogens.R` | Species-level correlations for all 12 WHO BPPL 2024 genera |
 | `07_figures.R` | Figures 1, 2, and supplementary PCoA ordination (Figure S2) |
+| `07b_supplementary_figures.R` | Supplementary figures (S0–S9) including collection-day sensitivity |
+| `07c_adjusted_correlations.R` | Covariate-adjusted partial correlations for species and ARG families |
 | `08_timeseries_5cities.R` | Within-city temporal replication using 5-city longitudinal data |
-| `09_timeseries_figures.R` | Figure 3 and supplementary temporal figures (Figures S3, S4) |
+| `09_timeseries_figures.R` | Figure 3 and supplementary temporal figures |
+| `09b_timeseries_species_figure.R` | Supplementary temporal species panels (Figure S13) |
+| `09c_city_species_figures.R` | Per-city species panels (Figures S15–S19) |
+| `10_tables.R` | Supplementary tables (LaTeX and CSV) |
+| `10b_tables_docx.R` | Supplementary tables (Word format) |
 | `sensitivity_humidity.R` | Humidity sensitivity analysis (Table S5) |
 | `sensitivity_temp_windows.R` | Temperature averaging window sensitivity (Table S6) |
 | `eFigure_pcoa_sensitivity.R` | PCoA scree plot and axis sensitivity (Figure S1) |
