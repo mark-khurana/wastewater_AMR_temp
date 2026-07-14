@@ -10,6 +10,7 @@ library(here)
 library(vegan)
 library(ggrepel)
 showtext_auto()
+showtext_opts(dpi = 300)
 font_add_google("Noto Sans", "notosans")
 
 theme_lph <- theme_bw(base_size = 10, base_family = "notosans") +
@@ -157,13 +158,13 @@ perm_df$bac_PC5 <- gen_pcoa$points[mod_idx, 5]
 
 set.seed(42)
 perm_total <- adonis2(res_dist ~ T_air_30d + city_f + month_f,
-                       data = perm_df, permutations = 999)
+                       data = perm_df, permutations = 999, by = "terms")
 r2_total <- perm_total["T_air_30d", "R2"]
 p_total  <- perm_total["T_air_30d", "Pr(>F)"]
 
 set.seed(42)
 perm_direct <- adonis2(res_dist ~ bac_PC1 + bac_PC2 + bac_PC3 + bac_PC4 + bac_PC5 + T_air_30d + city_f + month_f,
-                        data = perm_df, permutations = 999)
+                        data = perm_df, permutations = 999, by = "terms")
 r2_direct <- perm_direct["T_air_30d", "R2"]
 p_direct  <- perm_direct["T_air_30d", "Pr(>F)"]
 
@@ -180,9 +181,9 @@ fig3b <- ggplot(med_data, aes(x = "Resistome", y = R2, fill = path)) +
   geom_col(position = "stack", width = 0.45) +
   scale_fill_manual(values = c("Direct" = "#CC6677",
                                 "Indirect\n(via bacteriome)" = "#88CCEE")) +
-  scale_y_continuous(labels = percent_format(accuracy = 0.01),
+  scale_y_continuous(labels = label_number(accuracy = 0.001),
                      expand = expansion(mult = c(0, 0.25))) +
-  geom_text(aes(label = sprintf("%.2f%%", 100 * R2)),
+  geom_text(aes(label = sprintf("%.4f", R2)),
             position = position_stack(vjust = 0.5), size = 3.5) +
   annotate("text", x = 1, y = -0.003,
            label = sprintf("PERMANOVA p=%s\nadjusted for city + month",

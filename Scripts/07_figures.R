@@ -7,6 +7,7 @@ library(showtext)
 library(ggtext)
 library(here)
 showtext_auto()
+showtext_opts(dpi = 300)
 font_add_google("Noto Sans", "notosans")
 
 theme_lph <- theme_bw(base_size = 8, base_family = "notosans") +
@@ -84,10 +85,10 @@ step_data <- tibble(
 
 fig1b <- ggplot(step_data, aes(x = Adjustment, y = R2, fill = Resistome)) +
   geom_col(position = "dodge", width = 0.65) +
-  geom_text(aes(label = sprintf("%.2f%%", 100*R2)),
+  geom_text(aes(label = sprintf("%.4f", R2)),
             position = position_dodge(width = 0.65), vjust = -0.4, size = 2.2) +
   scale_fill_manual(values = pal_resistome) +
-  scale_y_continuous(labels = percent_format(accuracy = 0.01),
+  scale_y_continuous(labels = label_number(accuracy = 0.001),
                      expand = expansion(mult = c(0, 0.15))) +
   labs(tag = "B", y = "Temperature R\u00B2\n(PERMANOVA)", x = NULL, fill = NULL) +
   theme(legend.position.inside = c(0.8, 0.85),
@@ -116,9 +117,9 @@ fig1c <- ggplot(med_long, aes(x = resistome, y = R2, fill = path)) +
   geom_col(position = "stack", width = 0.45) +
   scale_fill_manual(values = c("Direct" = "#CC6677",
                                 "Indirect\n(via bacteriome)" = "#88CCEE")) +
-  scale_y_continuous(labels = percent_format(accuracy = 0.01),
+  scale_y_continuous(labels = label_number(accuracy = 0.001),
                      expand = expansion(mult = c(0, 0.25))) +
-  geom_text(aes(label = sprintf("%.2f%%", 100*R2)),
+  geom_text(aes(label = sprintf("%.4f", R2)),
             position = position_stack(vjust = 0.5), size = 2.2) +
   labs(tag = "C", y = "Temperature R\u00B2\n(adjusted, mediation)",
        x = NULL, fill = NULL) +
