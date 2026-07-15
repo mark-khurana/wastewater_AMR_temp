@@ -49,6 +49,8 @@ Run in order. Scripts that call external APIs (01, 01b, 02) cache results locall
 | `09c_city_species_figures.R` | Per-city species panels (Figures S15–S19) |
 | `10_tables.R` | Supplementary tables (LaTeX and CSV) |
 | `10b_tables_docx.R` | Supplementary tables (Word format) |
+| `11_reviewer_Q3_Q4.R` | Species-level longitudinal correlations and bacteriome variance by location |
+| `12_reviewer_supp_outputs.R` | Builds Figures S5, S6 and Table S8 (species longitudinal; bacteriome by location) |
 | `sensitivity_humidity.R` | Humidity sensitivity analysis (Table S5) |
 | `sensitivity_temp_windows.R` | Temperature averaging window sensitivity (Table S6) |
 | `eFigure_pcoa_sensitivity.R` | PCoA scree plot and axis sensitivity (Figure S1) |
