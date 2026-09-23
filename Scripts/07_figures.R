@@ -233,8 +233,8 @@ make_genus_panel <- function(genus_display, genus_pattern, species_list, tag) {
   plot_df_nonzero <- plot_df %>% filter(ra > 0)
 
   ggplot(plot_df_nonzero, aes(x = temp, y = log10(ra), colour = legend_label)) +
-    geom_point(alpha = 0.03, size = 0.2) +
-    geom_smooth(method = "lm", se = TRUE, linewidth = 0.8, alpha = 0.2) +
+    geom_point(alpha = 0.06, size = 0.3) +
+    geom_smooth(method = "lm", se = TRUE, linewidth = 1.0, alpha = 0.2) +
     scale_colour_manual(values = colour_map, name = NULL) +
     guides(colour = guide_legend(override.aes = list(alpha = 1, size = 0, linewidth = 1.2))) +
     labs(tag = tag,
@@ -298,11 +298,11 @@ p_l <- make_genus_panel("Haemophilus", "^Haemophilus",
 strip_y <- theme(axis.title.y = element_blank())
 strip_x <- theme(axis.title.x = element_blank())
 bigger_text <- theme(
-  axis.text = element_text(size = 7.5),
-  axis.title = element_text(size = 8.5),
-  plot.title = element_text(face = "bold.italic", size = 9.5),
-  legend.text = element_markdown(size = 7, lineheight = 1.2),
-  plot.tag = element_text(face = "bold", size = 11)
+  axis.text = element_text(size = 9),
+  axis.title = element_text(size = 10.5),
+  plot.title = element_text(face = "bold.italic", size = 12),
+  legend.text = element_markdown(size = 8.5, lineheight = 1.25),
+  plot.tag = element_text(face = "bold", size = 13)
 )
 
 # 4 columns x 3 rows (Critical / High / Medium)
@@ -383,6 +383,18 @@ pcoa_df <- layer3_data$bact_pcs %>%
 eig_pct <- round(100 * layer3_data$pcoa_eig[1:2] /
                     sum(layer3_data$pcoa_eig[layer3_data$pcoa_eig > 0]), 1)
 
+# Temperature PERMANOVA terms annotated onto the Figure S2 panels, read from the stored
+# model objects so the figure and the text cannot disagree.
+.med <- readRDS(here("Results", "layer3_mediation.rds"))
+.bact_r2 <- .med$perm_bact["T_30d", "R2"]
+.bact_p  <- .med$perm_bact["T_30d", "Pr(>F)"]
+.med_sum <- read_csv(here("Results", "layer3_mediation_summary.csv"), show_col_types = FALSE)
+.res_r2  <- .med_sum$r2_total[.med_sum$resistome == "FG"]
+.res_p   <- 0.001
+perm_label <- function(r2, p) sprintf("Temperature: R\u00B2 = %.1f%% of variation, p %s",
+                                      100 * r2,
+                                      if (p <= 0.001) "= 0.001" else sprintf("= %.3f", p))
+
 fig3b <- ggplot(pcoa_df, aes(x = BPC1, y = BPC2)) +
   geom_point(aes(fill = T_30d),
              alpha = 0.5, size = 1.0, shape = 21, stroke = 0.1, colour = "grey60") +
@@ -395,12 +407,14 @@ fig3b <- ggplot(pcoa_df, aes(x = BPC1, y = BPC2)) +
                                   ">20\u00B0C" = "#D73027"),
                       name = "Density",
                       guide = guide_legend(order = 2)) +
-  labs(tag = "A", title = "Bacteriome",
-       x = sprintf("PCoA1 (%.1f%%)", eig_pct[1]),
-       y = sprintf("PCoA2 (%.1f%%)", eig_pct[2])) +
+  labs(tag = "A", title = "Bacteriome (Bray-Curtis)",
+       subtitle = perm_label(.bact_r2, .bact_p),
+       x = sprintf("PCoA1 (%.1f%% of variation)", eig_pct[1]),
+       y = sprintf("PCoA2 (%.1f%% of variation)", eig_pct[2])) +
   theme(legend.position = "right",
         legend.key.height = unit(0.4, "cm"), legend.key.width = unit(0.25, "cm"),
-        plot.title = element_text(face = "bold", size = 8))
+        plot.title = element_text(face = "bold", size = 9),
+        plot.subtitle = element_text(size = 7.5, colour = "grey25"))
 
 resistome <- readRDS(here("Datasets", "resistome_matrices.rds"))
 fg_clr <- resistome$fg_cluster_clr %>%
@@ -435,19 +449,21 @@ fig3c <- ggplot(res_pcoa_df, aes(x = RPC1, y = RPC2)) +
                                   ">20\u00B0C" = "#D73027"),
                       name = "Density",
                       guide = guide_legend(order = 2)) +
-  labs(tag = "B", title = "Resistome",
-       x = sprintf("PCoA1 (%.1f%%)", fg_eig_pct[1]),
-       y = sprintf("PCoA2 (%.1f%%)", fg_eig_pct[2])) +
+  labs(tag = "B", title = "Resistome (Aitchison)",
+       subtitle = perm_label(.res_r2, .res_p),
+       x = sprintf("PCoA1 (%.1f%% of variation)", fg_eig_pct[1]),
+       y = sprintf("PCoA2 (%.1f%% of variation)", fg_eig_pct[2])) +
   theme(legend.position = "right",
         legend.key.height = unit(0.4, "cm"), legend.key.width = unit(0.25, "cm"),
-        plot.title = element_text(face = "bold", size = 8))
+        plot.title = element_text(face = "bold", size = 9),
+        plot.subtitle = element_text(size = 7.5, colour = "grey25"))
 
 ggsave(here("Figures", "SFig_adjusted_args_lollipop.pdf"), fig3a,
        width = 5, height = 4)
 
 sfig_pcoa <- fig3b | fig3c
 ggsave(here("Figures", "SFig_pcoa_bacteriome_resistome.pdf"), sfig_pcoa,
-       width = 7.5, height = 4)
+       width = 9, height = 4.4)
 
 fig1 <- fig1a / (fig1b | fig1c) +
   plot_layout(heights = c(1, 0.8))
@@ -457,8 +473,8 @@ ggsave(here("Figures", "Fig1_temperature_resistome.png"), fig1,
        width = 7.5, height = 6, dpi = 300)
 
 ggsave(here("Figures", "Fig2_species_pathogens.png"), fig2,
-       width = 12, height = 7, dpi = 300)
+       width = 14, height = 10.5, dpi = 450)
 ggsave(here("Figures", "SFig_adjusted_args_lollipop.png"), fig3a,
        width = 5, height = 4, dpi = 300)
 ggsave(here("Figures", "SFig_pcoa_bacteriome_resistome.png"), sfig_pcoa,
-       width = 7.5, height = 4, dpi = 300)
+       width = 9, height = 4.4, dpi = 450)
