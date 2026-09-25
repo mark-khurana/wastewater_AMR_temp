@@ -51,6 +51,8 @@ Run in order. Scripts that call external APIs (01, 01b, 02) cache results locall
 | `10b_tables_docx.R` | Supplementary tables (Word format) |
 | `11_reviewer_Q3_Q4.R` | Species-level longitudinal correlations and bacteriome variance by location |
 | `12_reviewer_supp_outputs.R` | Builds Figures S5, S6 and Table S8 (species longitudinal; bacteriome by location) |
+| `13_reviewer_sensitivity.R` | Sensitivity of the temperature association to zero handling and distance metric; dispersion tests (Table S9) |
+| `13b_dispersion_999.R` | Dispersion tests at 999 permutations (Table S9, Panel C) |
 | `sensitivity_humidity.R` | Humidity sensitivity analysis (Table S5) |
 | `sensitivity_temp_windows.R` | Temperature averaging window sensitivity (Table S6) |
 | `eFigure_pcoa_sensitivity.R` | PCoA scree plot and axis sensitivity (Figure S1) |
