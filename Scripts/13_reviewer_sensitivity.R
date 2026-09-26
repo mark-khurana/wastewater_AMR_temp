@@ -71,23 +71,23 @@ adjusted_permanova <- function(dist_mat, clim, perms = N_PERM) {
 
 clr_mat <- function(m) as.matrix(clr(m))
 
+# Primary zero replacement, as in 03_merge_analysis_ready.R: each zero becomes 65% of the
+# smallest non-zero value for that cluster, with the minimum taken over all samples.
+det_limits <- lapply(mats_adj, function(m) {
+  apply(as.matrix(m[, -1]), 2, function(x) min(x[x > 0]))
+})
+replace_zeros <- function(m, dl, frac = 0.65) {
+  for (j in seq_len(ncol(m))) m[m[, j] == 0, j] <- frac * dl[j]
+  m
+}
+
 # --------------------------------------------------------------------------------------
 # (2) Zero-handling sensitivity
 # --------------------------------------------------------------------------------------
-# compositions::zeroreplace(x, d, a) imputes every zero with a * d, where d is the detection
-# limit in the units of x and a defaults to 2/3. The published pipeline passes d = 0.65, which
-# imputes a flat 0.433 - see Results/rev_zero_diagnostics.csv for how that compares with the
-# observed non-zero values.
-zero_arms <- function(mat_adj, mat_raw) {
+zero_arms <- function(mat_adj, mat_raw, dl) {
   list(
-    "Multiplicative replacement, d = 0.65 (published pipeline)" = function() clr_mat(zeroreplace(mat_adj, d = 0.65)),
-    "Multiplicative replacement, 65% of per-cluster minimum detected value" = function() {
-      dl <- apply(mat_adj, 2, function(x) { p <- x[x > 0]; if (length(p)) min(p) else NA_real_ })
-      dl[is.na(dl)] <- min(mat_adj[mat_adj > 0])
-      out <- mat_adj
-      for (j in seq_len(ncol(out))) out[out[, j] == 0, j] <- 0.65 * dl[j]
-      clr_mat(out)
-    },
+    "Multiplicative replacement, 65% of per-cluster minimum detected value (primary analysis)" =
+      function() clr_mat(replace_zeros(mat_adj, dl)),
     "Multiplicative replacement, 65% of global minimum detected value" = function() {
       out <- mat_adj
       out[out == 0] <- 0.65 * min(mat_adj[mat_adj > 0])
@@ -100,9 +100,9 @@ zero_arms <- function(mat_adj, mat_raw) {
                                   z.warning = 1, suppress.print = TRUE)))
     },
     "Pseudocount of 1 read added to raw read counts" = function() clr_mat(mat_raw + 1),
-    "Clusters present in >= 50% of samples only (d = 0.65)" = function() {
+    "Clusters present in >= 50% of samples only" = function() {
       keep <- colMeans(mat_adj > 0) >= 0.5
-      clr_mat(zeroreplace(mat_adj[, keep, drop = FALSE], d = 0.65))
+      clr_mat(replace_zeros(mat_adj[, keep, drop = FALSE], dl[keep]))
     }
   )
 }
@@ -121,15 +121,15 @@ for (res_type in names(mats_adj)) {
     n_samples                    = nrow(a_adj$mat),
     n_clusters                   = ncol(a_adj$mat),
     zero_fraction                = mean(a_adj$mat == 0),
-    imputed_value_d065           = (2 / 3) * 0.65,
     median_nonzero               = median(pos),
-    pct_nonzero_below_imputed    = 100 * mean(pos < (2 / 3) * 0.65),
+    median_imputed_primary       = median((0.65 * det_limits[[res_type]])[col(a_adj$mat)[a_adj$mat == 0]]),
     n_clusters_prevalent_50pct   = sum(colMeans(a_adj$mat > 0) >= 0.5)
   )
 
-  for (arm in names(zero_arms(a_adj$mat, a_raw$mat))) {
+  arms <- zero_arms(a_adj$mat, a_raw$mat, det_limits[[res_type]])
+  for (arm in names(arms)) {
     message(sprintf("[zero] %-12s | %s", res_type, arm))
-    X <- zero_arms(a_adj$mat, a_raw$mat)[[arm]]()
+    X <- arms[[arm]]()
     out <- adjusted_permanova(dist(X), a_adj$clim)
     zero_results[[length(zero_results) + 1]] <-
       out %>% mutate(resistome = res_type, zero_method = arm, n_clusters = ncol(X), .before = 1)
@@ -148,7 +148,7 @@ disp_results <- list()
 
 for (res_type in names(mats_adj)) {
   a <- align(mats_adj[[res_type]])
-  d <- dist(clr_mat(zeroreplace(a$mat, d = 0.65)))
+  d <- dist(clr_mat(replace_zeros(a$mat, det_limits[[res_type]])))
 
   groupings <- list(
     "Temperature quartile" = cut(a$clim$T_30d, breaks = quantile(a$clim$T_30d, 0:4 / 4),
@@ -189,7 +189,7 @@ for (res_type in names(mats_adj)) {
 
   for (metric in c("Aitchison", "Bray-Curtis")) {
     message(sprintf("[dist] %-12s | %s", res_type, metric))
-    d <- if (metric == "Aitchison") dist(clr_mat(zeroreplace(a$mat, d = 0.65)))
+    d <- if (metric == "Aitchison") dist(clr_mat(replace_zeros(a$mat, det_limits[[res_type]])))
          else vegdist(rel, method = "bray")
     bc_results[[length(bc_results) + 1]] <-
       adjusted_permanova(d, a$clim) %>%

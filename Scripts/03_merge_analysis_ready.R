@@ -31,10 +31,21 @@ acq_class_mat <- build_matrix(acq_counts, "class")
 fg_cluster_mat  <- build_matrix(fg_counts, "cluster_representative_98")
 acq_cluster_mat <- build_matrix(acq_counts, "cluster_representative_98")
 
+# Zeros are replaced with 65% of the smallest non-zero value observed for that cluster (or
+# class), i.e. a per-column detection limit taken from the data, before the CLR transform.
+replace_zeros <- function(mat, frac = 0.65) {
+  for (j in seq_len(ncol(mat))) {
+    nz <- mat[mat[, j] > 0, j]
+    mat[mat[, j] == 0, j] <- frac * min(nz)
+  }
+  mat
+}
+
 clr_transform <- function(mat_with_id) {
   ids <- mat_with_id$genepid
   mat <- mat_with_id %>% select(-genepid) %>% as.matrix()
-  mat_replaced <- zeroreplace(mat, d = 0.65)
+  stopifnot(all(colSums(mat > 0) > 0))
+  mat_replaced <- replace_zeros(mat)
   clr_vals <- as.data.frame(clr(mat_replaced))
   clr_vals$genepid <- ids
   clr_vals

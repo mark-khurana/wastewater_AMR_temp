@@ -33,6 +33,9 @@ out <- list()
 
 for (res_type in names(mats)) {
   m      <- mats[[res_type]]
+  # Primary zero replacement (03_merge_analysis_ready.R): 65% of the per-cluster minimum
+  # non-zero value, taken over all samples.
+  dl     <- apply(as.matrix(m[, -1]), 2, function(x) min(x[x > 0]))
   shared <- intersect(m$genepid, analysis$genepid)
   m      <- m        %>% filter(genepid %in% shared) %>% arrange(genepid)
   clim   <- analysis %>% filter(genepid %in% shared) %>% arrange(genepid)
@@ -40,7 +43,8 @@ for (res_type in names(mats)) {
   m      <- as.matrix(m[keep, -1, drop = FALSE])
   clim   <- clim[keep, ]
 
-  d <- dist(as.matrix(clr(zeroreplace(m, d = 0.65))))
+  for (j in seq_len(ncol(m))) m[m[, j] == 0, j] <- 0.65 * dl[j]
+  d <- dist(as.matrix(clr(m)))
 
   groupings <- list(
     "Temperature quartile" = cut(clim$T_30d, breaks = quantile(clim$T_30d, 0:4 / 4),

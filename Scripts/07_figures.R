@@ -88,7 +88,7 @@ fig1b <- ggplot(step_data, aes(x = Adjustment, y = R2, fill = Resistome)) +
   geom_text(aes(label = sprintf("%.4f", R2)),
             position = position_dodge(width = 0.65), vjust = -0.4, size = 2.2) +
   scale_fill_manual(values = pal_resistome) +
-  scale_y_continuous(labels = label_number(accuracy = 0.001),
+  scale_y_continuous(breaks = breaks_width(0.002), labels = label_number(accuracy = 0.001),
                      expand = expansion(mult = c(0, 0.15))) +
   labs(tag = "B", y = "Temperature R\u00B2\n(PERMANOVA)", x = NULL, fill = NULL) +
   theme(legend.position.inside = c(0.8, 0.85),
@@ -117,7 +117,7 @@ fig1c <- ggplot(med_long, aes(x = resistome, y = R2, fill = path)) +
   geom_col(position = "stack", width = 0.45) +
   scale_fill_manual(values = c("Direct" = "#CC6677",
                                 "Indirect\n(via bacteriome)" = "#88CCEE")) +
-  scale_y_continuous(labels = label_number(accuracy = 0.001),
+  scale_y_continuous(breaks = breaks_width(0.002), labels = label_number(accuracy = 0.001),
                      expand = expansion(mult = c(0, 0.25))) +
   geom_text(aes(label = sprintf("%.4f", R2)),
             position = position_stack(vjust = 0.5), size = 2.2) +
@@ -390,7 +390,7 @@ eig_pct <- round(100 * layer3_data$pcoa_eig[1:2] /
 .bact_p  <- .med$perm_bact["T_30d", "Pr(>F)"]
 .med_sum <- read_csv(here("Results", "layer3_mediation_summary.csv"), show_col_types = FALSE)
 .res_r2  <- .med_sum$r2_total[.med_sum$resistome == "FG"]
-.res_p   <- 0.001
+.res_p   <- .med$med_fg$perm_c["T_30d", "Pr(>F)"]
 perm_label <- function(r2, p) sprintf("Temperature: R\u00B2 = %.1f%% of variation, p %s",
                                       100 * r2,
                                       if (p <= 0.001) "= 0.001" else sprintf("= %.3f", p))
@@ -469,12 +469,17 @@ fig1 <- fig1a / (fig1b | fig1c) +
   plot_layout(heights = c(1, 0.8))
 ggsave(here("Figures", "Fig1_temperature_resistome.pdf"), fig1,
        width = 7.5, height = 6)
+# showtext scales text by its own dpi setting, so it must match the PNG dpi.
+showtext_opts(dpi = 600)
 ggsave(here("Figures", "Fig1_temperature_resistome.png"), fig1,
-       width = 7.5, height = 6, dpi = 300)
+       width = 7.5, height = 6, dpi = 600)
+showtext_opts(dpi = 300)
 
 ggsave(here("Figures", "Fig2_species_pathogens.png"), fig2,
        width = 14, height = 10.5, dpi = 450)
 ggsave(here("Figures", "SFig_adjusted_args_lollipop.png"), fig3a,
        width = 5, height = 4, dpi = 300)
+showtext_opts(dpi = 600)
 ggsave(here("Figures", "SFig_pcoa_bacteriome_resistome.png"), sfig_pcoa,
-       width = 9, height = 4.4, dpi = 450)
+       width = 9, height = 4.4, dpi = 600)
+showtext_opts(dpi = 300)
